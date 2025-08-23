@@ -1,0 +1,58 @@
+I want to build a Student Fee Management System in Python (using FastAPI + SQLite for backend, and Jinja2 templates or a simple frontend). The application should:
+
+1. Manage multiple courses:
+   - Example: Office Management, Web Development, Digital Marketing, Graphic Designing
+   - Each course has a name, session, and total fee (fee may vary per course).
+   - Scholarship option should be available. When a scholarship amount is added, it will be deducted from the total fee for that student.
+
+2. Manage students:
+   - Fields: Name, Father Name, Contact, Enrolled Course, Total Fee, Scholarship, Net Payable Fee, Fee Paid, Fee Pending.
+   - Students can pay fee in installments (partial payments).
+   - The system should automatically update fee paid and fee pending.
+   - If a student leaves the course and requests a refund, the refunded amount should be deducted from the total collected. 
+   - Deleted student records must be archived (kept for history) instead of being completely removed.
+
+3. Manage expenses:
+   - An "Expenses" section should allow adding expense records with fields: Expense Title, Description, Amount, and Date.
+   - The system should calculate and display the total expenses incurred.
+   - Expenses should be included in the dashboard view.
+
+4. Dashboard:
+   - Show total fee collected till date for each offered course.
+   - Show total fee collected till date for all courses collectively.
+   - Show total pending fee across all students.
+   - Show total expenses incurred.
+   - Show **net available balance** = (Total Fee Collected - Total Expenses).
+   - Show list of enrolled students with:
+     - Their course
+     - Total fee
+     - Scholarship (if any)
+     - Net Payable fee
+     - Fee paid
+     - Fee pending
+   - Highlight students who have pending fees.
+
+5. Functionality:
+   - Add a new student with course, fee, and scholarship details.
+   - Record fee installment payments for any student, along with payment date and received by.
+   - Edit student details (update course, scholarship, fee, etc).
+   - Delete/Archive student.
+   - Add, view, and manage expense records.
+   - Simple user interface with forms and tables.
+
+6. Tech requirements:
+   - Use Python, FastAPI, and SQLite for data storage.
+   - Use SQLAlchemy ORM for database models.
+   - Use Jinja2 for HTML templates (for forms, tables, dashboard).
+   - Code should be modular and structured (separate routers for students, courses, and expenses).
+   - Provide instructions on how to run the app locally with:
+     `uvicorn main:app --reload`.
+
+Please generate a complete working project with the following files:
+- `main.py` (entry point with FastAPI app and router registration)
+- `models.py` (SQLAlchemy models for Course, Student, Payments, Expenses)
+- `schemas.py` (Pydantic models)
+- `routers/` folder (with `students.py`, `courses.py`, `expenses.py`)
+- `templates/` folder (HTML files for dashboard, student list, expense list, forms, etc)
+
+Make the UI clean and simple with Bootstrap.
