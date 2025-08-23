@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Student Info Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>{{ student.name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Course:</strong> {{ student.course.name }}</p>
+                        <p class="mb-1"><strong>Contact:</strong> {{ student.contact }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Net Payable:</strong> ₹{{ "%.2f"|format(student.net_payable_fee) }}</p>
+                        <p class="mb-1"><strong>Fee Paid:</strong> ₹{{ "%.2f"|format(student.fee_paid) }}</p>
+                        <p class="mb-0">
+                            <strong>Fee Pending:</strong> 
+                            <span class="text-{{ 'success' if student.fee_pending == 0 else 'danger' }}">
+                                ₹{{ "%.2f"|format(student.fee_pending) }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-money-bill me-2"></i>{{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.amount.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else "")) }}
+                                </div>
+                                {% for error in form.amount.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                                {% if 'payment' in title.lower() %}
+                                    <div class="form-text">Maximum: ₹{{ "%.2f"|format(student.fee_pending) }}</div>
+                                {% elif 'refund' in title.lower() %}
+                                    <div class="form-text">Maximum: ₹{{ "%.2f"|format(student.fee_paid) }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {% if 'payment' in title.lower() %}
+                                    {{ form.payment_date.label(class="form-label") }}
+                                    {{ form.payment_date(class="form-control" + (" is-invalid" if form.payment_date.errors else "")) }}
+                                    {% for error in form.payment_date.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% else %}
+                                    {{ form.refund_date.label(class="form-label") }}
+                                    {{ form.refund_date(class="form-control" + (" is-invalid" if form.refund_date.errors else "")) }}
+                                    {% for error in form.refund_date.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {% if 'payment' in title.lower() %}
+                            {{ form.received_by.label(class="form-label") }}
+                            {{ form.received_by(class="form-control" + (" is-invalid" if form.received_by.errors else "")) }}
+                            {% for error in form.received_by.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        {% else %}
+                            {{ form.processed_by.label(class="form-label") }}
+                            {{ form.processed_by(class="form-control" + (" is-invalid" if form.processed_by.errors else "")) }}
+                            {% for error in form.processed_by.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {% if 'payment' in title.lower() %}
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", rows="3") }}
+                            <div class="form-text">Optional: Any additional notes about this payment.</div>
+                        {% else %}
+                            {{ form.reason.label(class="form-label") }}
+                            {{ form.reason(class="form-control" + (" is-invalid" if form.reason.errors else ""), rows="3") }}
+                            {% for error in form.reason.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-{{ 'success' if 'payment' in title.lower() else 'warning' }}">
+                            <i class="fas fa-{{ 'money-bill' if 'payment' in title.lower() else 'undo' }} me-1"></i>
+                            {% if 'payment' in title.lower() %}Record Payment{% else %}Process Refund{% endif %}
+                        </button>
+                        <a href="{{ url_for('students.detail', id=student.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

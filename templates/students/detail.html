@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.name }} - Student Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-user me-2"></i>{{ student.name }}
+        {% if student.is_archived %}
+            <span class="badge bg-secondary">Archived</span>
+        {% endif %}
+    </h1>
+    <div class="d-flex gap-2">
+        {% if not student.is_archived %}
+            <a href="{{ url_for('students.edit', id=student.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-1"></i>Edit
+            </a>
+            {% if student.fee_pending > 0 %}
+                <a href="{{ url_for('students.add_payment', id=student.id) }}" class="btn btn-success">
+                    <i class="fas fa-money-bill me-1"></i>Record Payment
+                </a>
+            {% endif %}
+            {% if student.fee_paid > 0 %}
+                <a href="{{ url_for('students.add_refund', id=student.id) }}" class="btn btn-warning">
+                    <i class="fas fa-undo me-1"></i>Process Refund
+                </a>
+            {% endif %}
+            <form method="POST" action="{{ url_for('students.archive', id=student.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to archive this student?')">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-archive me-1"></i>Archive
+                </button>
+            </form>
+        {% else %}
+            <form method="POST" action="{{ url_for('students.restore', id=student.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-undo me-1"></i>Restore Student
+                </button>
+            </form>
+        {% endif %}
+        <a href="{{ url_for('students.list') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Students
+        </a>
+    </div>
+</div>
+
+<!-- Student Information -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Student Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ student.name }}</p>
+                        <p><strong>Father's Name:</strong> {{ student.father_name }}</p>
+                        <p><strong>Contact:</strong> {{ student.contact }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Course:</strong> {{ student.course.name }}</p>
+                        <p><strong>Session:</strong> {{ student.course.session }}</p>
+                        <p><strong>Enrolled:</strong> {{ student.created_at.strftime('%d %b %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calculator me-2"></i>Fee Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Total Fee:</span>
+                    <strong>₹{{ "%.2f"|format(student.total_fee) }}</strong>
+                </div>
+                {% if student.scholarship > 0 %}
+                <div class="d-flex justify-content-between mb-2 text-info">
+                    <span>Scholarship:</span>
+                    <strong>-₹{{ "%.2f"|format(student.scholarship) }}</strong>
+                </div>
+                {% endif %}
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Net Payable:</span>
+                    <strong>₹{{ "%.2f"|format(student.net_payable_fee) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2 text-success">
+                    <span>Fee Paid:</span>
+                    <strong>₹{{ "%.2f"|format(student.fee_paid) }}</strong>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <span>Fee Pending:</span>
+                    <strong class="text-{{ 'success' if student.fee_pending == 0 else 'danger' }}">
+                        ₹{{ "%.2f"|format(student.fee_pending) }}
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Payment History
+                </h5>
+                {% if not student.is_archived and student.fee_pending > 0 %}
+                    <a href="{{ url_for('students.add_payment', id=student.id) }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus me-1"></i>Add Payment
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-end">Amount</th>
+                                    <th>Received By</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ payment.payment_date.strftime('%d %b %Y') }}</td>
+                                    <td class="text-end text-success">₹{{ "%.2f"|format(payment.amount) }}</td>
+                                    <td>{{ payment.received_by }}</td>
+                                    <td>{{ payment.notes or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-money-bill fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No payments recorded yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Refund History -->
+{% if refunds %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-undo me-2"></i>Refund History
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th class="text-end">Amount</th>
+                                <th>Reason</th>
+                                <th>Processed By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for refund in refunds %}
+                            <tr>
+                                <td>{{ refund.refund_date.strftime('%d %b %Y') }}</td>
+                                <td class="text-end text-warning">₹{{ "%.2f"|format(refund.amount) }}</td>
+                                <td>{{ refund.reason }}</td>
+                                <td>{{ refund.processed_by }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
